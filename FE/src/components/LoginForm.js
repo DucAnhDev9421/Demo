@@ -10,6 +10,11 @@ const LoginForm = () => {
     rememberMe: false
   });
   
+  const [errors, setErrors] = useState({
+    username: false,
+    password: false
+  });
+  
   const [message, setMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
@@ -20,23 +25,42 @@ const LoginForm = () => {
       [name]: type === 'checkbox' ? checked : value
     }));
     
+    // Xóa lỗi khi user bắt đầu nhập
+    if (errors[name]) {
+      setErrors(prev => ({
+        ...prev,
+        [name]: false
+      }));
+    }
+    
     // Xóa thông báo lỗi khi user bắt đầu nhập
     if (message) {
       setMessage('');
     }
   };
 
+  const validateForm = () => {
+    const newErrors = {
+      username: !formData.username.trim(),
+      password: !formData.password.trim()
+    };
+    
+    setErrors(newErrors);
+    
+    // Kiểm tra nếu có lỗi
+    if (newErrors.username || newErrors.password) {
+      setMessage('Điền đầy đủ username và password');
+      return false;
+    }
+    
+    return true;
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     
     // Validation
-    if (!formData.username.trim()) {
-      setMessage('Vui lòng nhập tên đăng nhập');
-      return;
-    }
-    
-    if (!formData.password.trim()) {
-      setMessage('Vui lòng nhập mật khẩu');
+    if (!validateForm()) {
       return;
     }
 
@@ -92,7 +116,7 @@ const LoginForm = () => {
               value={formData.username}
               onChange={handleInputChange}
               placeholder="Nhập tên đăng nhập"
-              className="form-input"
+              className={`form-input ${errors.username ? 'form-input-error' : ''}`}
               autoComplete="username"
             />
           </div>
@@ -106,7 +130,7 @@ const LoginForm = () => {
               value={formData.password}
               onChange={handleInputChange}
               placeholder="Nhập mật khẩu"
-              className="form-input"
+              className={`form-input ${errors.password ? 'form-input-error' : ''}`}
               autoComplete="current-password"
             />
           </div>

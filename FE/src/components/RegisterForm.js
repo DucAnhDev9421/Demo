@@ -12,6 +12,13 @@ const RegisterForm = () => {
     agreeToTerms: false
   });
   
+  const [errors, setErrors] = useState({
+    username: false,
+    email: false,
+    password: false,
+    confirmPassword: false
+  });
+  
   const [message, setMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
@@ -22,37 +29,57 @@ const RegisterForm = () => {
       [name]: type === 'checkbox' ? checked : value
     }));
     
+    // Xóa lỗi khi user bắt đầu nhập
+    if (errors[name]) {
+      setErrors(prev => ({
+        ...prev,
+        [name]: false
+      }));
+    }
+    
     if (message) {
       setMessage('');
     }
+  };
+
+  const validateForm = () => {
+    const newErrors = {
+      username: !formData.username.trim(),
+      email: !formData.email.trim(),
+      password: !formData.password.trim(),
+      confirmPassword: !formData.confirmPassword.trim()
+    };
+    
+    setErrors(newErrors);
+    
+    // Kiểm tra nếu có lỗi
+    if (newErrors.username || newErrors.email || newErrors.password || newErrors.confirmPassword) {
+      setMessage('Vui lòng điền đầy đủ thông tin');
+      return false;
+    }
+    
+    if (formData.password !== formData.confirmPassword) {
+      setErrors(prev => ({
+        ...prev,
+        confirmPassword: true
+      }));
+      setMessage('Mật khẩu xác nhận không khớp');
+      return false;
+    }
+    
+    if (!formData.agreeToTerms) {
+      setMessage('Vui lòng đồng ý với điều khoản sử dụng');
+      return false;
+    }
+    
+    return true;
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     
     // Validation
-    if (!formData.username.trim()) {
-      setMessage('Vui lòng nhập tên đăng nhập');
-      return;
-    }
-    
-    if (!formData.email.trim()) {
-      setMessage('Vui lòng nhập email');
-      return;
-    }
-    
-    if (!formData.password.trim()) {
-      setMessage('Vui lòng nhập mật khẩu');
-      return;
-    }
-    
-    if (formData.password !== formData.confirmPassword) {
-      setMessage('Mật khẩu xác nhận không khớp');
-      return;
-    }
-    
-    if (!formData.agreeToTerms) {
-      setMessage('Vui lòng đồng ý với điều khoản sử dụng');
+    if (!validateForm()) {
       return;
     }
 
@@ -96,7 +123,7 @@ const RegisterForm = () => {
               value={formData.username}
               onChange={handleInputChange}
               placeholder="Nhập tên đăng nhập"
-              className="form-input"
+              className={`form-input ${errors.username ? 'form-input-error' : ''}`}
               autoComplete="username"
             />
           </div>
@@ -110,7 +137,7 @@ const RegisterForm = () => {
               value={formData.email}
               onChange={handleInputChange}
               placeholder="Nhập email"
-              className="form-input"
+              className={`form-input ${errors.email ? 'form-input-error' : ''}`}
               autoComplete="email"
             />
           </div>
@@ -124,7 +151,7 @@ const RegisterForm = () => {
               value={formData.password}
               onChange={handleInputChange}
               placeholder="Nhập mật khẩu"
-              className="form-input"
+              className={`form-input ${errors.password ? 'form-input-error' : ''}`}
               autoComplete="new-password"
             />
           </div>
@@ -138,7 +165,7 @@ const RegisterForm = () => {
               value={formData.confirmPassword}
               onChange={handleInputChange}
               placeholder="Nhập lại mật khẩu"
-              className="form-input"
+              className={`form-input ${errors.confirmPassword ? 'form-input-error' : ''}`}
               autoComplete="new-password"
             />
           </div>

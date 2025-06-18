@@ -8,6 +8,10 @@ const ForgotPasswordForm = () => {
     email: ''
   });
   
+  const [errors, setErrors] = useState({
+    email: false
+  });
+  
   const [message, setMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
@@ -19,24 +23,51 @@ const ForgotPasswordForm = () => {
       [name]: value
     }));
     
+    // Xóa lỗi khi user bắt đầu nhập
+    if (errors[name]) {
+      setErrors(prev => ({
+        ...prev,
+        [name]: false
+      }));
+    }
+    
     if (message) {
       setMessage('');
     }
+  };
+
+  const validateForm = () => {
+    const newErrors = {
+      email: !formData.email.trim()
+    };
+    
+    setErrors(newErrors);
+    
+    // Kiểm tra nếu có lỗi
+    if (newErrors.email) {
+      setMessage('Vui lòng nhập email');
+      return false;
+    }
+    
+    // Basic email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(formData.email)) {
+      setErrors(prev => ({
+        ...prev,
+        email: true
+      }));
+      setMessage('Vui lòng nhập email hợp lệ');
+      return false;
+    }
+    
+    return true;
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     
     // Validation
-    if (!formData.email.trim()) {
-      setMessage('Vui lòng nhập email');
-      return;
-    }
-    
-    // Basic email validation
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(formData.email)) {
-      setMessage('Vui lòng nhập email hợp lệ');
+    if (!validateForm()) {
       return;
     }
 
@@ -84,7 +115,7 @@ const ForgotPasswordForm = () => {
                 value={formData.email}
                 onChange={handleInputChange}
                 placeholder="Nhập email của bạn"
-                className="form-input"
+                className={`form-input ${errors.email ? 'form-input-error' : ''}`}
                 autoComplete="email"
               />
             </div>
