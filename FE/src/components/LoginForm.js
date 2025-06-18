@@ -17,6 +17,12 @@ const LoginForm = () => {
   
   const [message, setMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+
+  // Hàm kiểm tra ký tự Unicode
+  const hasUnicodeCharacters = (str) => {
+    return /[\u0080-\uFFFF]/.test(str);
+  };
 
   const handleInputChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -39,11 +45,31 @@ const LoginForm = () => {
     }
   };
 
+  const togglePasswordVisibility = () => {
+    setShowPassword(!showPassword);
+  };
+
   const validateForm = () => {
     const newErrors = {
       username: !formData.username.trim(),
       password: !formData.password.trim()
     };
+    
+    // Kiểm tra ký tự Unicode trong username
+    if (formData.username.trim() && hasUnicodeCharacters(formData.username)) {
+      newErrors.username = true;
+      setErrors(newErrors);
+      setMessage('Username không được dùng ký tự unicode');
+      return false;
+    }
+    
+    // Kiểm tra ký tự Unicode trong password
+    if (formData.password.trim() && hasUnicodeCharacters(formData.password)) {
+      newErrors.password = true;
+      setErrors(newErrors);
+      setMessage('Password không được dùng ký tự unicode');
+      return false;
+    }
     
     setErrors(newErrors);
     
@@ -123,16 +149,26 @@ const LoginForm = () => {
 
           <div className="form-group">
             <label htmlFor="password">Mật khẩu</label>
-            <input
-              type="password"
-              id="password"
-              name="password"
-              value={formData.password}
-              onChange={handleInputChange}
-              placeholder="Nhập mật khẩu"
-              className={`form-input ${errors.password ? 'form-input-error' : ''}`}
-              autoComplete="current-password"
-            />
+            <div className="password-input-container">
+              <input
+                type={showPassword ? "text" : "password"}
+                id="password"
+                name="password"
+                value={formData.password}
+                onChange={handleInputChange}
+                placeholder="Nhập mật khẩu"
+                className={`form-input ${errors.password ? 'form-input-error' : ''}`}
+                autoComplete="current-password"
+              />
+              <button
+                type="button"
+                className="password-toggle-btn"
+                onClick={togglePasswordVisibility}
+                aria-label={showPassword ? "Ẩn mật khẩu" : "Hiện mật khẩu"}
+              >
+                {showPassword ? "🙈" : "👁️"}
+              </button>
+            </div>
           </div>
 
           {/* Label ẩn cho thông báo */}
